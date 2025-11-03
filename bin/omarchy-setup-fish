@@ -2,7 +2,7 @@
 set -e
 
 BASHRC="${HOME}/.bashrc"
-TEMPLATE="/usr/share/omarchy-fish/bashrc"
+TEMPLATE="/usr/share/omarchy-fish/templates/bashrc"
 BACKUP="${HOME}/.bashrc.backup-$(date +%Y%m%d-%H%M%S)"
 
 echo "Setting fish as your default shell..."
