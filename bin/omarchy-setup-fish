@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+BASHRC="${HOME}/.bashrc"
+TEMPLATE="/usr/share/omarchy-fish/bashrc"
+BACKUP="${HOME}/.bashrc.backup-$(date +%Y%m%d-%H%M%S)"
+
+echo "Setting fish as your default shell..."
+
+# Create backup if .bashrc exists
+if [ -f "${BASHRC}" ]; then
+  cp "${BASHRC}" "${BACKUP}"
+fi
+
+# Copy template
+cp "${TEMPLATE}" "${BASHRC}"
+
+echo ""
+echo -e "\033[32m✓ fish setup complete\033[0m"
+if [ -f "${BACKUP}" ]; then
+  echo "  - Original .bashrc backed up to:"
+  echo "    ${BACKUP}"
+  echo ""
+fi
+echo "Restart your terminal to activate fish"
