@@ -1,6 +1,6 @@
 Omarchy shell configuration for Fish shell.
 
-## Installation
+## Install
 ```bash
 # Install the package
 sudo pacman -S omarchy-fish
@@ -24,15 +24,15 @@ To add your own functions or override omarchy-fish functions:
 ```bash
 # Create your own functions
 mkdir -p ~/.config/fish/functions
-nano ~/.config/fish/functions/my_function.fish
+nvim ~/.config/fish/functions/my_function.fish
 
 # Or add to your main config
-nano ~/.config/fish/config.fish
+nvim ~/.config/fish/config.fish
 ```
 
 User functions in `~/.config/fish/functions/` take precedence over vendor functions.
 
-## Uninstallation
+## Uninstall
 
 ```bash
 sudo pacman -R omarchy-fish
