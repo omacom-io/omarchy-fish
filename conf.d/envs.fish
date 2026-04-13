@@ -10,3 +10,7 @@ set -gx FZF_DEFAULT_OPTS '--cycle --layout=default --height=90% --preview-window
 
 # Ensure fzf history search shows preview (empty to not override the built-in preview)
 set -gx fzf_history_opts
+
+# Omarchy PATH - required for omarchy-* commands to work
+fish_add_path $HOME/.local/share/omarchy/bin
+fish_add_path $HOME/.local/bin
