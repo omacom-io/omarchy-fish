@@ -13,16 +13,21 @@ function format-drive
       sudo wipefs -a $device
       sudo dd if=/dev/zero of="$device" bs=1M count=100 status=progress
       sudo parted -s $device mklabel gpt
-      sudo parted -s $device mkpart primary ext4 1MiB 100%
+      sudo parted -s $device mkpart primary 1MiB 100%
+      sudo parted -s $device set 1 msftdata on
+
       if string match -q '*nvme*' -- $device
-        set part (string join '' $device 'p1')
+        set partition "$device"p1
       else
-        set part (string join '' $device '1')
+        set partition "$device"1
       end
-      sudo mkfs.ext4 -L "$label" "$part"
-      set mount "/run/media/$USER/$label"
-      sudo chmod -R 777 "$mount"
-      echo "Drive $device formatted and labeled '$label'."
+
+      sudo partprobe $device; or true
+      sudo udevadm settle; or true
+
+      sudo mkfs.exfat -n "$label" "$partition"
+
+      echo "Drive $device formatted as exFAT and labeled '$label'."
     end
   end
 end
