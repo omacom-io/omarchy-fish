@@ -10,3 +10,7 @@ set -gx FZF_DEFAULT_OPTS '--cycle --layout=default --height=90% --preview-window
 
 # Ensure fzf history search shows preview (empty to not override the built-in preview)
 set -gx fzf_history_opts
+
+# Color man pages with bat
+set -x MANROFFOPT -c
+set -x MANPAGER "sh -c 'col -bx | bat -l man -p'"
