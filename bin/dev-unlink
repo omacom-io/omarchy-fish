@@ -1,0 +1,32 @@
+#!/bin/bash
+set -euo pipefail
+
+REPO="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+VENDOR_BASE="${XDG_DATA_HOME:-$HOME/.local/share}/fish"
+
+# Match dev-link: include leading-dot symlinks like ....fish
+shopt -s dotglob
+
+removed=0
+for dst_dir in "$VENDOR_BASE"/vendor_functions.d "$VENDOR_BASE"/vendor_conf.d "$VENDOR_BASE"/vendor_completions.d; do
+  [[ -d $dst_dir ]] || continue
+  for link in "$dst_dir"/*; do
+    [[ -L $link ]] || continue
+    target="$(readlink -- "$link")"
+    case "$target" in
+      "$REPO"/*)
+        rm -- "$link"
+        removed=$((removed + 1))
+        ;;
+    esac
+  done
+done
+
+BANNER="$VENDOR_BASE/vendor_conf.d/__omarchy-fish-dev-banner.fish"
+if [[ -f $BANNER ]]; then
+  rm -- "$BANNER"
+  removed=$((removed + 1))
+fi
+
+echo "Removed $removed dev file(s) for $REPO"
+echo "Open a new fish shell to drop dev-linked conf.d from this session."
