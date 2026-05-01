@@ -1,0 +1,48 @@
+#!/bin/bash
+set -euo pipefail
+
+REPO="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+PKGBUILD_SRC="${1:-$HOME/Work/omarchy/omarchy-pkgs/pkgbuilds/edge/omarchy-fish}"
+
+if [[ ! -f $PKGBUILD_SRC/PKGBUILD ]]; then
+  echo "PKGBUILD not found in: $PKGBUILD_SRC" >&2
+  echo "Pass the directory containing PKGBUILD as the first argument." >&2
+  exit 1
+fi
+
+pkgname=$(awk -F= '/^pkgname=/ {gsub(/[" ]/,"",$2); print $2; exit}' "$PKGBUILD_SRC/PKGBUILD")
+
+# Always tag dev builds with the commit hash so `pacman -Q` makes it obvious
+# the installed version came from this script and points back at a specific
+# commit. `.dirty` if the working tree has uncommitted edits.
+short_sha=$(git -C "$REPO" rev-parse --short HEAD)
+dirty=""
+# --porcelain catches modified, staged, and untracked-not-ignored files —
+# i.e. anything `git ls-files -co --exclude-standard` will pull into the tarball.
+if [[ -n $(git -C "$REPO" status --porcelain) ]]; then
+  dirty=".dirty"
+fi
+pkgver="dev.${short_sha}${dirty}"
+
+build_dir=$(mktemp -d -t omarchy-fish-pkg-test.XXXXXX)
+trap 'rm -rf "$build_dir"' EXIT
+
+cp -a "$PKGBUILD_SRC"/. "$build_dir/"
+sed -i "s/^pkgver=.*/pkgver=${pkgver}/" "$build_dir/PKGBUILD"
+
+# Replace the upstream tarball with one built from the working tree.
+# `git ls-files -co --exclude-standard` includes tracked + untracked-not-ignored
+# files, read from disk, so uncommitted edits are picked up.
+(
+  cd "$REPO"
+  git ls-files -co --exclude-standard -z |
+    tar --null --transform "s,^,${pkgname}-${pkgver}/," \
+        -czf "$build_dir/${pkgname}-${pkgver}.tar.gz" -T -
+)
+
+echo "Building ${pkgname} ${pkgver} (tarball: ${pkgname}-${pkgver}.tar.gz)"
+echo "makepkg working dir: $build_dir"
+echo
+
+cd "$build_dir"
+makepkg -si --skipchecksums "${@:2}"

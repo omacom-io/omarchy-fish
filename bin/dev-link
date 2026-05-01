@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+REPO="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+VENDOR_BASE="${XDG_DATA_HOME:-$HOME/.local/share}/fish"
+
+# Match the PKGBUILD: include leading-dot function names like ....fish
+shopt -s dotglob
+
+declare -A DIRS=(
+  [functions]=vendor_functions.d
+  [conf.d]=vendor_conf.d
+  [completions]=vendor_completions.d
+)
+
+linked=0
+for src in "${!DIRS[@]}"; do
+  src_dir="$REPO/$src"
+  dst_dir="$VENDOR_BASE/${DIRS[$src]}"
+  [[ -d $src_dir ]] || continue
+  mkdir -p "$dst_dir"
+  for f in "$src_dir"/*.fish; do
+    [[ -e $f ]] || continue
+    ln -snf "$f" "$dst_dir/$(basename "$f")"
+    linked=$((linked + 1))
+  done
+done
+
+# Drop a conf.d snippet so every new interactive fish prints a reminder that
+# the working tree is shadowing the packaged version. Removed by dev-unlink.
+BANNER="$VENDOR_BASE/vendor_conf.d/__omarchy-fish-dev-banner.fish"
+cat >"$BANNER" <<EOF
+status is-interactive; or return
+printf '\e[33m⚠ omarchy-fish dev linked: \e[1m%s\e[22m — run "bin/dev-unlink" to restore packaged version\e[0m\n' '$REPO'
+EOF
+
+echo "Linked $linked file(s) from $REPO into $VENDOR_BASE/vendor_*.d/"
+echo "Functions and completions hot-reload on next call."
+echo "For conf.d edits to take effect, open a new fish shell."
