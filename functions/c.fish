@@ -1,3 +1,3 @@
-function c --wraps=opencode --description 'alias c=opencode'
-  opencode $argv
+function c --wraps=opencode --description 'alias c=opencode --auto'
+  opencode --auto $argv
 end
