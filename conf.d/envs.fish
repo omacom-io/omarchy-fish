@@ -14,3 +14,8 @@ set -gx fzf_history_opts
 # Color man pages with bat
 set -x MANROFFOPT -c
 set -x MANPAGER "sh -c 'col -bx | bat -l man -p'"
+
+# Append ~/.local/bin to PATH if missing
+if not contains -- $HOME/.local/bin $PATH
+    set -gx PATH $PATH $HOME/.local/bin
+end

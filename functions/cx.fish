@@ -1,4 +1,4 @@
-function cx --description 'Launch Claude Code with Dangerously Skip Permissions Allowed'
+function cx --description 'Launch Claude Code with auto permission mode'
     printf "\033[2J\033[3J\033[H"
-    claude --allow-dangerously-skip-permissions $argv
+    claude --permission-mode auto $argv
 end
